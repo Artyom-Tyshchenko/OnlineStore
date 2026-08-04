@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лавка — свежие продукты каждый день</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+
+  :root{
+    --cream:#F7F1E3;
+    --ink:#241C15;
+    --ink-soft:#5A4E3E;
+    --green:#3F5A44;
+    --green-dark:#2C4030;
+    --mustard:#D3A047;
+    --tomato:#C1453A;
+    --card:#FFFDF7;
+    --line: rgba(36,28,21,0.14);
+    --radius: 4px;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Manrope', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* subtle paper texture */
+  body::before{
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(63,90,68,0.04) 0, transparent 45%),
+      radial-gradient(circle at 80% 60%, rgba(193,69,58,0.04) 0, transparent 45%);
+    pointer-events:none;
+    z-index:0;
+  }
+
+  header{
+    position:relative;
+    background:var(--green);
+    color:var(--cream);
+    padding:2.4rem 1.5rem 3.2rem;
+    text-align:center;
+    overflow:hidden;
+  }
+  header::after{
+    content:'';
+    position:absolute; left:0; right:0; bottom:-1px; height:18px;
+    background:
+      linear-gradient(135deg, var(--cream) 25%, transparent 25%) 0 0,
+      linear-gradient(225deg, var(--cream) 25%, transparent 25%) 0 0;
+    background-size: 18px 18px;
+  }
+  .eyebrow{
+    font-family:'Space Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    opacity:0.75;
+    margin-bottom:0.6rem;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:clamp(2.2rem, 5vw, 3.4rem);
+    margin:0 0 0.4rem;
+    letter-spacing:-0.01em;
+  }
+  header p{
+    font-size:0.98rem;
+    opacity:0.85;
+    max-width:32ch;
+    margin:0 auto;
+  }
+
+  .admin-toggle{
+    position:absolute;
+    top:1.2rem; right:1.4rem;
+    font-family:'Space Mono', monospace;
+    font-size:0.68rem;
+    letter-spacing:0.06em;
+    color:var(--cream);
+    opacity:0.55;
+    background:none;
+    border:1px solid rgba(247,241,227,0.35);
+    padding:0.4rem 0.7rem;
+    border-radius:999px;
+    cursor:pointer;
+    transition:opacity 0.2s;
+  }
+  .admin-toggle:hover{ opacity:1; }
+
+  main{
+    max-width:1080px;
+    margin:0 auto;
+    padding:2.6rem 1.5rem 5rem;
+    position:relative;
+    z-index:1;
+    display:grid;
+    grid-template-columns: 1fr 320px;
+    gap:2.4rem;
+    align-items:start;
+  }
+  @media (max-width: 800px){
+    main{ grid-template-columns: 1fr; }
+  }
+
+  .section-label{
+    font-family:'Space Mono', monospace;
+    font-size:0.74rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 1rem;
+    display:flex; align-items:center; gap:0.6rem;
+  }
+  .section-label::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background:var(--line);
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(190px, 1fr));
+    gap:1rem;
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:1.1rem 1rem 1rem;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    gap:0.65rem;
+    transition:transform 0.16s ease, box-shadow 0.16s ease;
+  }
+  .card:hover{
+    transform:translateY(-3px);
+    box-shadow:0 10px 22px rgba(36,28,21,0.09);
+  }
+  .card .icon{
+    font-size:1.8rem;
+    line-height:1;
+  }
+  .card h3{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:1.08rem;
+    margin:0;
+  }
+  .tag{
+    align-self:flex-start;
+    font-family:'Space Mono', monospace;
+    font-size:0.92rem;
+    font-weight:700;
+    color:var(--green-dark);
+    background:rgba(211,160,71,0.22);
+    padding:0.18rem 0.55rem;
+    border-radius:2px;
+  }
+  .add-btn{
+    margin-top:auto;
+    background:var(--green);
+    color:var(--cream);
+    border:none;
+    font-family:'Manrope', sans-serif;
+    font-weight:600;
+    font-size:0.86rem;
+    padding:0.6rem 0.8rem;
+    border-radius:3px;
+    cursor:pointer;
+    transition:background 0.15s;
+  }
+  .add-btn:hover{ background:var(--green-dark); }
+  .add-btn:active{ transform:scale(0.97); }
+
+  .new-badge{
+    position:absolute;
+    top:-8px; right:-8px;
+    background:var(--tomato);
+    color:#fff;
+    font-family:'Space Mono', monospace;
+    font-size:0.62rem;
+    letter-spacing:0.05em;
+    padding:0.22rem 0.45rem;
+    border-radius:999px;
+    transform:rotate(6deg);
+  }
+
+  /* Receipt cart */
+  .receipt-wrap{
+    position:sticky;
+    top:1.5rem;
+  }
+  .receipt{
+    background:var(--card);
+    border:1px solid var(--line);
+    padding:1.4rem 1.3rem 1.6rem;
+    font-family:'Space Mono', monospace;
+    box-shadow:0 12px 30px rgba(36,28,21,0.08);
+    clip-path: polygon(
+      0% 0%, 100% 0%, 100% 96%,
+      95% 100%, 90% 96%, 85% 100%, 80% 96%, 75% 100%,
+      70% 96%, 65% 100%, 60% 96%, 55% 100%, 50% 96%,
+      45% 100%, 40% 96%, 35% 100%, 30% 96%, 25% 100%,
+      20% 96%, 15% 100%, 10% 96%, 5% 100%, 0% 96%
+    );
+    padding-bottom:2rem;
+  }
+  .receipt-head{
+    text-align:center;
+    border-bottom:1px dashed var(--line);
+    padding-bottom:0.9rem;
+    margin-bottom:0.9rem;
+  }
+  .receipt-head .store-name{
+    font-family:'Fraunces', serif;
+    font-size:1.15rem;
+    font-weight:700;
+    letter-spacing:0.02em;
+  }
+  .receipt-head .store-sub{
+    font-size:0.66rem;
+    color:var(--ink-soft);
+    margin-top:0.2rem;
+  }
+  #basket-items{
+    display:flex;
+    flex-direction:column;
+    gap:0.55rem;
+    min-height:2rem;
+    margin-bottom:0.9rem;
+  }
+  .empty-basket{
+    font-size:0.78rem;
+    color:var(--ink-soft);
+    text-align:center;
+    padding:1rem 0;
+  }
+  .basket-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:0.82rem;
+    gap:0.5rem;
+  }
+  .basket-row .name{ flex:1; }
+  .basket-row .remove{
+    background:none;
+    border:none;
+    color:var(--tomato);
+    cursor:pointer;
+    font-size:0.9rem;
+    line-height:1;
+    padding:0 0.2rem;
+  }
+  .receipt-total{
+    border-top:1px dashed var(--line);
+    padding-top:0.8rem;
+    display:flex;
+    justify-content:space-between;
+    font-weight:700;
+    font-size:0.95rem;
+  }
+  .checkout-btn{
+    width:100%;
+    margin-top:1rem;
+    background:var(--tomato);
+    color:#fff;
+    border:none;
+    font-family:'Manrope', sans-serif;
+    font-weight:700;
+    font-size:0.9rem;
+    padding:0.75rem;
+    border-radius:3px;
+    cursor:pointer;
+    transition:background 0.15s;
+  }
+  .checkout-btn:hover{ background:#a53a30; }
+  .checkout-btn:disabled{
+    background:#c9beac;
+    cursor:not-allowed;
+  }
+  .order-note{
+    font-size:0.72rem;
+    color:var(--green-dark);
+    text-align:center;
+    margin-top:0.7rem;
+    min-height:1rem;
+  }
+
+  .orders-history{
+    margin-top:1.3rem;
+    font-family:'Manrope', sans-serif;
+  }
+  .orders-history h4{
+    font-family:'Space Mono', monospace;
+    font-size:0.7rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 0.5rem;
+  }
+  .order-chip{
+    font-size:0.76rem;
+    color:var(--ink-soft);
+    padding:0.3rem 0;
+    border-bottom:1px dashed var(--line);
+  }
+
+  /* Admin panel */
+  .admin-panel{
+    display:none;
+    background:var(--card);
+    border:1px dashed var(--tomato);
+    border-radius:var(--radius);
+    padding:1.2rem;
+    margin-top:1.4rem;
+    grid-column:1 / -1;
+  }
+  .admin-panel.open{ display:block; }
+  .admin-panel h3{
+    font-family:'Fraunces', serif;
+    margin:0 0 0.8rem;
+    font-size:1.05rem;
+    color:var(--tomato);
+  }
+  .admin-form{
+    display:flex;
+    gap:0.7rem;
+    flex-wrap:wrap;
+  }
+  .admin-form input{
+    font-family:'Manrope', sans-serif;
+    padding:0.55rem 0.7rem;
+    border:1px solid var(--line);
+    border-radius:3px;
+    font-size:0.86rem;
+    flex:1;
+    min-width:140px;
+  }
+  .admin-form button{
+    background:var(--tomato);
+    color:#fff;
+    border:none;
+    padding:0.55rem 1.1rem;
+    border-radius:3px;
+    font-weight:600;
+    cursor:pointer;
+    font-family:'Manrope', sans-serif;
+  }
+
+  /* Login modal */
+  .modal-overlay{
+    display:none;
+    position:fixed; inset:0;
+    background:rgba(36,28,21,0.5);
+    align-items:center; justify-content:center;
+    z-index:10;
+    padding:1rem;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal{
+    background:var(--cream);
+    border-radius:6px;
+    padding:1.6rem;
+    max-width:320px;
+    width:100%;
+    text-align:center;
+    box-shadow:0 20px 50px rgba(0,0,0,0.25);
+  }
+  .modal h3{
+    font-family:'Fraunces', serif;
+    margin:0 0 0.3rem;
+  }
+  .modal p{
+    font-size:0.8rem;
+    color:var(--ink-soft);
+    margin:0 0 1rem;
+  }
+  .modal input{
+    width:100%;
+    padding:0.6rem 0.7rem;
+    margin-bottom:0.6rem;
+    border:1px solid var(--line);
+    border-radius:3px;
+    font-family:'Manrope', sans-serif;
+    font-size:0.86rem;
+  }
+  .modal .btn-row{
+    display:flex;
+    gap:0.6rem;
+    margin-top:0.4rem;
+  }
+  .modal button{
+    flex:1;
+    padding:0.6rem;
+    border-radius:3px;
+    border:none;
+    font-weight:600;
+    cursor:pointer;
+    font-family:'Manrope', sans-serif;
+  }
+  .modal .primary{ background:var(--green); color:#fff; }
+  .modal .secondary{ background:none; color:var(--ink-soft); border:1px solid var(--line); }
+  .modal .err{
+    font-size:0.74rem;
+    color:var(--tomato);
+    min-height:1rem;
+    margin-top:-0.2rem;
+    margin-bottom:0.4rem;
+  }
+
+  footer{
+    text-align:center;
+    font-family:'Space Mono', monospace;
+    font-size:0.68rem;
+    color:var(--ink-soft);
+    padding:1.4rem;
+    opacity:0.7;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="admin-toggle" id="adminToggle">Вход для администратора</button>
+  <div class="eyebrow">Рядом с домом · открыто ежедневно</div>
+  <h1>Лавка</h1>
+  <p>Свежий хлеб, молочка и мелочи для чая. Собери корзину — мы всё приготовим.</p>
+</header>
+
+<main>
+  <div>
+    <div class="section-label">Каталог</div>
+    <div class="grid" id="catalog"></div>
+
+    <div class="admin-panel" id="adminPanel">
+      <h3>Добавить товар в каталог</h3>
+      <div class="admin-form">
+        <input type="text" id="newName" placeholder="Название">
+        <input type="number" id="newPrice" placeholder="Цена, ₽">
+        <button id="addProductBtn">Добавить</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="receipt-wrap">
+    <div class="receipt">
+      <div class="receipt-head">
+        <div class="store-name">Лавка</div>
+        <div class="store-sub">— чек покупателя —</div>
+      </div>
+      <div id="basket-items"></div>
+      <div class="receipt-total">
+        <span>Итого</span>
+        <span id="basket-total">0 ₽</span>
+      </div>
+      <button class="checkout-btn" id="checkoutBtn" disabled>Оформить заказ</button>
+      <div class="order-note" id="orderNote"></div>
+
+      <div class="orders-history" id="ordersHistory" style="display:none;">
+        <h4>Прошлые заказы</h4>
+        <div id="ordersList"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>сделано на чистом JS — как дань старой консольной версии</footer>
+
+<div class="modal-overlay" id="loginModal">
+  <div class="modal">
+    <h3>Вход для администратора</h3>
+    <p>Непросвещённым вход воспрещён</p>
+    <input type="text" id="loginInput" placeholder="Логин">
+    <input type="password" id="passInput" placeholder="Пароль">
+    <div class="err" id="loginErr"></div>
+    <div class="btn-row">
+      <button class="secondary" id="loginCancel">Отмена</button>
+      <button class="primary" id="loginSubmit">Войти</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---- Classes mirroring the original C# model ----
+  class Product {
+    constructor(id, name, price, icon){
+      this.id = id;
+      this.name = name;
+      this.price = price;
+      this.icon = icon || '🛒';
+    }
+  }
+
+  class Order {
+    static counter = 1;
+    constructor(products){
+      this.orderNumber = Order.counter++;
+      this.products = products;
+      this.fullPrice = products.reduce((sum, p) => sum + p.price, 0);
+    }
+  }
+
+  class Store {
+    constructor(){
+      this.products = [
+        new Product(1, 'Хлеб', 25, '🍞'),
+        new Product(2, 'Печенье', 50, '🍪'),
+        new Product(3, 'Масло', 250, '🧈'),
+        new Product(4, 'Йогурт', 300, '🥛'),
+        new Product(5, 'Сок', 80, '🧃'),
+      ];
+      this.basket = [];
+      this.orders = [];
+      this.nextId = 6;
+    }
+    addToBasket(productId){
+      const product = this.products.find(p => p.id === productId);
+      if (product) this.basket.push(product);
+    }
+    removeFromBasket(index){
+      this.basket.splice(index, 1);
+    }
+    createOrder(){
+      if (this.basket.length === 0) return null;
+      const order = new Order([...this.basket]);
+      this.orders.push(order);
+      this.basket = [];
+      return order;
+    }
+    addProduct(name, price){
+      const product = new Product(this.nextId++, name, price, '✨');
+      this.products.push(product);
+      return product;
+    }
+  }
+
+  const store = new Store();
+  let isAdmin = false;
+
+  // ---- Rendering ----
+  function renderCatalog(){
+    const catalog = document.getElementById('catalog');
+    catalog.innerHTML = '';
+    store.products.forEach(product => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      if (product.icon === '✨') {
+        card.innerHTML = `<div class="new-badge">NEW</div>`;
+      }
+      card.innerHTML += `
+        <div class="icon">${product.icon}</div>
+        <h3>${product.name}</h3>
+        <span class="tag">${product.price} ₽</span>
+        <button class="add-btn" data-id="${product.id}">В корзину</button>
+      `;
+      catalog.appendChild(card);
+    });
+    catalog.querySelectorAll('.add-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        store.addToBasket(Number(btn.dataset.id));
+        renderBasket();
+      });
+    });
+  }
+
+  function renderBasket(){
+    const container = document.getElementById('basket-items');
+    const totalEl = document.getElementById('basket-total');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+
+    if (store.basket.length === 0){
+      container.innerHTML = `<div class="empty-basket">Корзина пуста</div>`;
+      checkoutBtn.disabled = true;
+    } else {
+      container.innerHTML = '';
+      store.basket.forEach((product, index) => {
+        const row = document.createElement('div');
+        row.className = 'basket-row';
+        row.innerHTML = `
+          <span class="name">${product.icon} ${product.name}</span>
+          <span>${product.price} ₽</span>
+          <button class="remove" data-index="${index}" title="Убрать">✕</button>
+        `;
+        container.appendChild(row);
+      });
+      checkoutBtn.disabled = false;
+      container.querySelectorAll('.remove').forEach(btn => {
+        btn.addEventListener('click', () => {
+          store.removeFromBasket(Number(btn.dataset.index));
+          renderBasket();
+        });
+      });
+    }
+
+    const total = store.basket.reduce((sum, p) => sum + p.price, 0);
+    totalEl.textContent = total + ' ₽';
+  }
+
+  function renderOrdersHistory(){
+    const wrap = document.getElementById('ordersHistory');
+    const list = document.getElementById('ordersList');
+    if (store.orders.length === 0){
+      wrap.style.display = 'none';
+      return;
+    }
+    wrap.style.display = 'block';
+    list.innerHTML = '';
+    store.orders.slice().reverse().forEach(order => {
+      const chip = document.createElement('div');
+      chip.className = 'order-chip';
+      chip.textContent = `№${order.orderNumber} — ${order.products.length} тов. — ${order.fullPrice} ₽`;
+      list.appendChild(chip);
+    });
+  }
+
+  document.getElementById('checkoutBtn').addEventListener('click', () => {
+    const order = store.createOrder();
+    const note = document.getElementById('orderNote');
+    if (order){
+      note.textContent = `Заказ №${order.orderNumber} оформлен на ${order.fullPrice} ₽. Спасибо!`;
+      renderBasket();
+      renderOrdersHistory();
+      setTimeout(() => { note.textContent = ''; }, 4000);
+    }
+  });
+
+  // ---- Admin login (homage to the original Admin/2898 check) ----
+  const loginModal = document.getElementById('loginModal');
+  document.getElementById('adminToggle').addEventListener('click', () => {
+    if (isAdmin){
+      document.getElementById('adminPanel').classList.toggle('open');
+      return;
+    }
+    loginModal.classList.add('open');
+    document.getElementById('loginErr').textContent = '';
+  });
+  document.getElementById('loginCancel').addEventListener('click', () => {
+    loginModal.classList.remove('open');
+  });
+  document.getElementById('loginSubmit').addEventListener('click', () => {
+    const login = document.getElementById('loginInput').value;
+    const pass = document.getElementById('passInput').value;
+    if (login === 'Admin' && pass === '2898'){
+      isAdmin = true;
+      loginModal.classList.remove('open');
+      document.getElementById('adminPanel').classList.add('open');
+      document.getElementById('loginInput').value = '';
+      document.getElementById('passInput').value = '';
+    } else {
+      document.getElementById('loginErr').textContent = 'Неверный логин или пароль';
+    }
+  });
+
+  document.getElementById('addProductBtn').addEventListener('click', () => {
+    const name = document.getElementById('newName').value.trim();
+    const price = Number(document.getElementById('newPrice').value);
+    if (name && price > 0){
+      store.addProduct(name, price);
+      renderCatalog();
+      document.getElementById('newName').value = '';
+      document.getElementById('newPrice').value = '';
+    }
+  });
+
+  // ---- Init ----
+  renderCatalog();
+  renderBasket();
+</script>
+
+</body>
+</html>
